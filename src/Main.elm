@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Css exposing (..)
-import Html.Styled exposing (Html, div, text, toUnstyled)
+import Html.Styled exposing (Html, button, col, div, text, toUnstyled)
 import Html.Styled.Attributes exposing (css)
 import List exposing (map)
 
@@ -147,9 +147,42 @@ update _ model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ css [ display inlineFlex, flexDirection column ] ]
         [ sodukuBoard model.sodukuBoard
+        , sodukuInput
         ]
+
+
+sodukuInput : Html Msg
+sodukuInput =
+    div [ css [ displayFlex, justifyContent spaceBetween, marginTop (px 20) ] ]
+        (map
+            (\n ->
+                button
+                    [ css
+                        [ displayFlex
+                        , justifyContent center
+                        , alignItems center
+                        , fontSize (px 30)
+                        , color palette.white
+                        , backgroundColor palette.darkslateblue
+                        , border (px 0)
+                        , height (px 70)
+                        , width (px 50)
+                        , position relative
+                        , focus
+                            [ backgroundColor palette.white
+                            , color palette.darkslateblue
+                            , outlineColor palette.darkslateblue
+                            ]
+                        ]
+                    ]
+                    [ viewSodukuNumber n
+                    , div [ css [ fontSize (px 14), position absolute, top (px 4), right (px 4) ] ] [ text "2" ]
+                    ]
+            )
+            [ N1, N2, N3, N4, N5, N6, N7, N8, N9 ]
+        )
 
 
 sodukuBoard : List SodukuCell -> Html Msg
@@ -191,7 +224,14 @@ commonCellStyles =
 
 theme =
     { cellBorder = rgb 211 211 211
-    , boxBorder = rgb 0 0 0
+    , boxBorder = palette.black
+    }
+
+
+palette =
+    { white = rgb 255 255 255
+    , black = rgb 0 0 0
+    , darkslateblue = hex "483d8b"
     }
 
 
@@ -210,51 +250,40 @@ viewCell cell =
                 ]
 
 
-viewSodukuNumber : SodukuNumber -> Html Msg
-viewSodukuNumber number =
+readSodukuNumber : SodukuNumber -> String
+readSodukuNumber number =
     case number of
         N1 ->
-            text "1"
+            "1"
 
         N2 ->
-            text "2"
+            "2"
 
         N3 ->
-            text "3"
+            "3"
 
         N4 ->
-            text "4"
+            "4"
 
         N5 ->
-            text "5"
+            "5"
 
         N6 ->
-            text "6"
+            "6"
 
         N7 ->
-            text "7"
+            "7"
 
         N8 ->
-            text "8"
+            "8"
 
         N9 ->
-            text "9"
+            "9"
 
 
-sodukuBlock : Html Msg
-sodukuBlock =
-    div
-        []
-        [ div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        , div [] [ text "1" ]
-        ]
+viewSodukuNumber : SodukuNumber -> Html Msg
+viewSodukuNumber number =
+    text (readSodukuNumber number)
 
 
 
