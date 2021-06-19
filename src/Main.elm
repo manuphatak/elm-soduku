@@ -2,9 +2,11 @@ module Main exposing (..)
 
 import Browser
 import Css exposing (..)
+import Debug exposing (toString)
 import Html.Styled exposing (Html, button, col, div, text, toUnstyled)
 import Html.Styled.Attributes exposing (css)
-import List exposing (map)
+import SodukuCell exposing (Meta, SodukuCell(..))
+import SodukuNumber exposing (SodukuNumber(..))
 
 
 
@@ -14,28 +16,6 @@ import List exposing (map)
 type alias Model =
     { sodukuBoard : List SodukuCell
     }
-
-
-type SodukuNumber
-    = N1
-    | N2
-    | N3
-    | N4
-    | N5
-    | N6
-    | N7
-    | N8
-    | N9
-
-
-type alias Meta =
-    { row : SodukuNumber, col : SodukuNumber, block : SodukuNumber, pencilMarks : List SodukuNumber }
-
-
-type SodukuCell
-    = Empty Meta
-    | Given Meta SodukuNumber
-    | Input Meta SodukuNumber
 
 
 init : ( Model, Cmd Msg )
@@ -149,14 +129,14 @@ view : Model -> Html Msg
 view model =
     div [ css [ display inlineFlex, flexDirection column ] ]
         [ sodukuBoard model.sodukuBoard
-        , sodukuInput
+        , sodukuInput model.sodukuBoard
         ]
 
 
-sodukuInput : Html Msg
-sodukuInput =
+sodukuInput : List SodukuCell -> Html Msg
+sodukuInput board =
     div [ css [ displayFlex, justifyContent spaceBetween, marginTop (px 20) ] ]
-        (map
+        (List.map
             (\n ->
                 button
                     [ css
@@ -177,12 +157,23 @@ sodukuInput =
                             ]
                         ]
                     ]
-                    [ viewSodukuNumber n
-                    , div [ css [ fontSize (px 14), position absolute, top (px 4), right (px 4) ] ] [ text "2" ]
+                    [ SodukuNumber.view n
+                    , div [ css [ fontSize (px 14), position absolute, top (px 4), right (px 4) ] ] [ getOutstandingCount board n ]
                     ]
             )
-            [ N1, N2, N3, N4, N5, N6, N7, N8, N9 ]
+            SodukuNumber.elements
         )
+
+
+getOutstandingCount : List SodukuCell -> SodukuNumber -> Html Msg
+getOutstandingCount cells number =
+    cells
+        |> List.filterMap SodukuCell.value
+        |> List.filter ((==) number)
+        |> List.length
+        |> (-) 9
+        |> toString
+        |> text
 
 
 sodukuBoard : List SodukuCell -> Html Msg
@@ -197,7 +188,7 @@ sodukuBoard cells =
             , border3 (px 2) solid theme.boxBorder
             ]
         ]
-        (map
+        (List.map
             viewCell
             cells
         )
@@ -242,48 +233,12 @@ viewCell cell =
             div [ css [ commonCellStyles ] ] [ text " " ]
 
         Given _ value ->
-            div [ css [ commonCellStyles ] ] [ viewSodukuNumber value ]
+            div [ css [ commonCellStyles ] ] [ SodukuNumber.view value ]
 
         Input _ value ->
             div [ css [ commonCellStyles ] ]
-                [ viewSodukuNumber value
+                [ SodukuNumber.view value
                 ]
-
-
-readSodukuNumber : SodukuNumber -> String
-readSodukuNumber number =
-    case number of
-        N1 ->
-            "1"
-
-        N2 ->
-            "2"
-
-        N3 ->
-            "3"
-
-        N4 ->
-            "4"
-
-        N5 ->
-            "5"
-
-        N6 ->
-            "6"
-
-        N7 ->
-            "7"
-
-        N8 ->
-            "8"
-
-        N9 ->
-            "9"
-
-
-viewSodukuNumber : SodukuNumber -> Html Msg
-viewSodukuNumber number =
-    text (readSodukuNumber number)
 
 
 
