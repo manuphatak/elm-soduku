@@ -3,10 +3,12 @@ module Main exposing (..)
 import Browser
 import Css exposing (..)
 import Debug exposing (toString)
-import Html.Styled exposing (Html, button, col, div, text, toUnstyled)
+import Html.Styled exposing (Html, button, div, text, toUnstyled)
 import Html.Styled.Attributes exposing (css)
+import SodukuBoard exposing (SodukuBoard)
 import SodukuCell exposing (Meta, SodukuCell(..))
 import SodukuNumber exposing (SodukuNumber(..))
+import Theme exposing (palette)
 
 
 
@@ -14,7 +16,7 @@ import SodukuNumber exposing (SodukuNumber(..))
 
 
 type alias Model =
-    { sodukuBoard : List SodukuCell
+    { sodukuBoard : SodukuBoard
     }
 
 
@@ -128,12 +130,12 @@ update _ model =
 view : Model -> Html Msg
 view model =
     div [ css [ display inlineFlex, flexDirection column ] ]
-        [ sodukuBoard model.sodukuBoard
+        [ SodukuBoard.view model.sodukuBoard
         , sodukuInput model.sodukuBoard
         ]
 
 
-sodukuInput : List SodukuCell -> Html Msg
+sodukuInput : SodukuBoard -> Html Msg
 sodukuInput board =
     div [ css [ displayFlex, justifyContent spaceBetween, marginTop (px 20) ] ]
         (List.map
@@ -165,80 +167,15 @@ sodukuInput board =
         )
 
 
-getOutstandingCount : List SodukuCell -> SodukuNumber -> Html Msg
-getOutstandingCount cells number =
-    cells
+getOutstandingCount : SodukuBoard -> SodukuNumber -> Html Msg
+getOutstandingCount board number =
+    board
         |> List.filterMap SodukuCell.value
         |> List.filter ((==) number)
         |> List.length
         |> (-) 9
         |> toString
         |> text
-
-
-sodukuBoard : List SodukuCell -> Html Msg
-sodukuBoard cells =
-    div
-        [ css
-            [ property "display" "inline-grid"
-            , property "grid-template-columns" "repeat(9, 60px)"
-            , property "grid-template-rows" "repeat(9, 60px)"
-            , property "place-items" "stretch stretch"
-            , fontFamilies [ "system-ui" ]
-            , border3 (px 2) solid theme.boxBorder
-            ]
-        ]
-        (List.map
-            viewCell
-            cells
-        )
-
-
-commonCellStyles : Style
-commonCellStyles =
-    Css.batch
-        [ border3 (px 1) solid theme.cellBorder
-        , displayFlex
-        , justifyContent center
-        , alignItems center
-        , fontSize (px 50)
-        , nthChild "3n + 1" [ borderLeft3 (px 2) double theme.boxBorder ]
-        , nthChild "3n" [ borderRight3 (px 2) double theme.boxBorder ]
-        , nthChild "n" [ nthChild "-n + 9" [ borderTop3 (px 2) double theme.boxBorder ] ]
-        , nthChild "n + 19" [ nthChild "-n + 27" [ borderBottom3 (px 2) solid theme.boxBorder ] ]
-        , nthChild "n + 28" [ nthChild "-n + 36" [ borderTop3 (px 2) solid theme.boxBorder ] ]
-        , nthChild "n + 46" [ nthChild "-n + 54" [ borderBottom3 (px 2) solid theme.boxBorder ] ]
-        , nthChild "n + 55" [ nthChild "-n + 63" [ borderTop3 (px 2) solid theme.boxBorder ] ]
-        , nthChild "n + 73" [ nthChild "-n + 81" [ borderBottom3 (px 2) solid theme.boxBorder ] ]
-        ]
-
-
-theme =
-    { cellBorder = rgb 211 211 211
-    , boxBorder = palette.black
-    }
-
-
-palette =
-    { white = rgb 255 255 255
-    , black = rgb 0 0 0
-    , darkslateblue = hex "483d8b"
-    }
-
-
-viewCell : SodukuCell -> Html Msg
-viewCell cell =
-    case cell of
-        Empty _ ->
-            div [ css [ commonCellStyles ] ] [ text " " ]
-
-        Given _ value ->
-            div [ css [ commonCellStyles ] ] [ SodukuNumber.view value ]
-
-        Input _ value ->
-            div [ css [ commonCellStyles ] ]
-                [ SodukuNumber.view value
-                ]
 
 
 
